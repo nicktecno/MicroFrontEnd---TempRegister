@@ -38,6 +38,9 @@ const nextConfig = {
       new NextFederationPlugin({
         name: "sellerPage",
         remotes: {
+          loginPage: `loginPage@https://micro-front-login.vercel.app/_next/static/${
+            isServer ? "ssr" : "chunks"
+          }/remoteEntry.js`,
           generalProductCards: `generalProductCards@https://micro-front-search-k5g1.vercel.app//_next/static/${
             isServer ? "ssr" : "chunks"
           }/remoteEntry.js`,
@@ -45,7 +48,7 @@ const nextConfig = {
 
         filename: "static/chunks/remoteEntry.js",
         exposes: {
-          "./seller": "./PagesComponents/Seller/Seller.jsx",
+          "./cart": "./PagesComponents/Cart/Cart.jsx",
         },
 
         extraOptions: {
