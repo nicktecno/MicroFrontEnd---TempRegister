@@ -15,7 +15,7 @@ const customMedia = generateMedia({
 });
 
 export const DeleteIcon = styled(TrashFill)`
-  color: #333031;
+  color: #292728;
   height: 35px;
   width: 35px;
   margin-right: 0px;
@@ -56,8 +56,7 @@ export const Container = styled.div`
   background: #f4f4f5;
   padding: 30px;
   align-items: center;
-  box-shadow: rgb(134 133 133 / 16%) 3px 3px 80px,
-    rgb(92 91 91 / 23%) 0px 0px 3px;
+
   ${customMedia.lessThan("tablet")`
   
   justify-content:center;
@@ -80,31 +79,33 @@ margin-right:0px;
 `}
 `;
 
-export const ProdutoImg = styled.a`
+export const ProdutoImg = styled.p`
+  cursor: pointer;
   background-color: #fff;
   padding: 10px;
   width: 100px;
   height: 100px;
-  -webkit-box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.27);
-  box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.27);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 
   img {
     object-fit: cover;
     width: 100%;
     max-width: 100%;
-    height: 100%;
-    max-height: 100%;
+    height: auto;
+    max-height: 260px;
   }
 `;
 
 export const CaixaProduto = styled.div`
   width: 100%;
-  display: block;
+  display: flex;
+  flex-direction: column;
   margin-bottom: 15px;
+  -webkit-box-shadow: rgb(231 231 231) 1px 2px 16px;
+  box-shadow: rgb(231 231 231) 1px 2px 16px;
 
   img {
     width: 100%;
@@ -117,7 +118,7 @@ export const CaixaProduto = styled.div`
   }
   h4 {
     font-size: 14px;
-    color: #929292;
+    color: #595959;
   }
 
   ul {
@@ -135,11 +136,16 @@ export const CaixaProduto = styled.div`
 export const DadosProduto = styled.div`
   display: flex;
   align-items: center;
+  margin-right: 10px;
 
   .NomeModelo {
     display: flex;
     flex-direction: column;
     width: 150px;
+    div {
+      font-size: 12px;
+      font-weight: 500;
+    }
   }
   .Cor {
     display: flex;
@@ -200,17 +206,27 @@ export const quantidade = styled.div`
   }
 
   .adicao {
+    border: 0px;
+
     width: 30px;
     font-weight: bold;
     transition: 0.3s;
+    :hover {
+      background: var(--default-color);
+    }
   }
   .subtracao {
     width: 30px;
     font-weight: bold;
     transition: 0.3s;
+    border: 0px;
+    :hover {
+      background: var(--default-color);
+    }
   }
 
   .qtd {
+    width: 30px;
     font-size: 18px;
     font-weight: 700;
   }
@@ -233,14 +249,14 @@ export const quantidade = styled.div`
 
 export const ProdutoValor = styled.div`
   display: flex;
-  width: 160px;
-
+  margin-right: 20px;
   align-items: center;
   flex-direction: column;
-  color: #000000;
-  font-size: 16px;
+  color: #292728;
+  font-size: 18px;
   font-weight: 700;
   gap: 10px;
+  width: 150px;
 
   ${customMedia.lessThan("tablet")`
   display:none;
@@ -248,8 +264,11 @@ export const ProdutoValor = styled.div`
 
   span {
     font-weight: bold;
-    color: #444;
+    color: #595959;
     font-size: 12px;
+  }
+  p {
+    font-weight: bold;
   }
 `;
 
@@ -272,6 +291,7 @@ export const quantidadeMobile = styled.div`
   position: relative;
   display: flex;
   margin: 0px;
+  margin-left:10px;
 
   align-items: center;
   justify-content: center;
@@ -291,19 +311,23 @@ export const quantidadeMobile = styled.div`
   }
 
   .adicao {
-		
+
     width: 30px;
     font-weight: bold;
     transition: 0.3s;
-   
+    :hover {
+			background: var(--default-color);
+    }
   }
   .subtracao {
-  
+
     width: 30px;
     font-weight: bold;
     transition: 0.3s;
 
- 
+    :hover {
+			background: var(--default-color);
+    }
   }
 
   .qtd {
@@ -332,7 +356,7 @@ export const quantidadeMobile = styled.div`
     display:flex;
     justify-content:center;
     align-items:center;
-	
+  
     width: 40px;
     height:40px;
     font-size:20px;
@@ -346,7 +370,7 @@ export const quantidadeMobile = styled.div`
     display:flex;
     justify-content:center;
     align-items:center;
-	
+   
     width: 40px;
     height:40px;
     font-size:20px;
@@ -376,7 +400,7 @@ ${customMedia.lessThan("pobre")`
     display:flex;
     justify-content:center;
     align-items:center;
-		
+
     width: 30px;
     height:30px;
     font-size:16px;
@@ -437,7 +461,7 @@ export const ProdutoValorMobile = styled.div`
   margin-top:10px;
   margin-right: 20px;
   align-items: center;
-  color: #000000;
+  color: #292728;
   font-size: 18px;
   font-weight: 700;
   gap: 10px;
@@ -445,8 +469,11 @@ export const ProdutoValorMobile = styled.div`
 
   span {
     font-weight: bold;
-    color: #444;
+    color: #292728;
     font-size: 18px;
+  }
+  p{
+    margin: 0px;
   }
   `}
 

@@ -36,7 +36,7 @@ const nextConfig = {
     };
     config.plugins.push(
       new NextFederationPlugin({
-        name: "sellerPage",
+        name: "tempCartPage",
         remotes: {
           loginPage: `loginPage@https://micro-front-login.vercel.app/_next/static/${
             isServer ? "ssr" : "chunks"
@@ -44,11 +44,14 @@ const nextConfig = {
           generalProductCards: `generalProductCards@https://micro-front-search-k5g1.vercel.app//_next/static/${
             isServer ? "ssr" : "chunks"
           }/remoteEntry.js`,
+          productPage: `productPage@https://micro-front-end-product.vercel.app//_next/static/${
+            isServer ? "ssr" : "chunks"
+          }/remoteEntry.js`,
         },
 
         filename: "static/chunks/remoteEntry.js",
         exposes: {
-          "./cart": "./PagesComponents/Cart/Cart.jsx",
+          "./tempCart": "./PagesComponents/TempCart/TempCart.jsx",
         },
 
         extraOptions: {

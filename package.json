@@ -3,15 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -- -p 3022",
+    "dev": "next dev -- -p 3023",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@apollo/client": "^3.7.12",
     "@module-federation/nextjs-mf": "^6.4.0",
+    "@styled-icons/heroicons-solid": "^10.47.0",
     "axios": "^1.2.2",
     "bootstrap": "4.6.0",
+    "graphql": "^16.6.0",
     "next": "^13.3.1",
     "next-images": "^1.8.4",
     "react": "18.2.0",
@@ -20,7 +23,6 @@
     "react-geocode": "^0.2.3",
     "react-helmet": "^6.1.0",
     "react-input-mask": "^2.0.4",
-    "react-slick": "^0.28.1",
     "react-toastify": "^9.1.1",
     "slick-carousel": "^1.8.1",
     "styled-components": "^5.3.6",
