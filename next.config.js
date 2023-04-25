@@ -36,11 +36,16 @@ const nextConfig = {
     };
     config.plugins.push(
       new NextFederationPlugin({
-        name: "loginPage",
-        remotes: {},
+        name: "sellerPage",
+        remotes: {
+          generalProductCards: `generalProductCards@https://micro-front-search-k5g1.vercel.app//_next/static/${
+            isServer ? "ssr" : "chunks"
+          }/remoteEntry.js`,
+        },
+
         filename: "static/chunks/remoteEntry.js",
         exposes: {
-          "./login": "./PagesComponents/Login/Login.jsx",
+          "./seller": "./PagesComponents/Seller/Seller.jsx",
         },
 
         extraOptions: {

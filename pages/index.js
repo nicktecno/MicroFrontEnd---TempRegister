@@ -1,9 +1,11 @@
-import LoginPage from "../PagesComponents/Login/Login";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function Home() {
-  return (
-    <>
-      <LoginPage />
-    </>
-  );
+  const history = useRouter();
+  useEffect(() => {
+    history.push("/seller/anv2-aquecedores");
+  }, []);
+
+  return <></>;
 }
