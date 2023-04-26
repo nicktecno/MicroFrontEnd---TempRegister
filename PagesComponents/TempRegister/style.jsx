@@ -79,6 +79,12 @@ export const proceder = styled.div`
   }
 `;
 
+export const ErrorMessage = styled.div`
+  color: #ce171f;
+  margin-top: 2px;
+  margin-bottom: 15px;
+`;
+
 export const form = styled.div`
   margin-top: 30px;
   p {
@@ -94,7 +100,7 @@ export const form = styled.div`
       width: 100%;
       display: block;
       font-size: 14px;
-      margin-bottom: 25px;
+
       position: relative;
       span {
         margin-left: 10px;
@@ -113,7 +119,7 @@ export const form = styled.div`
       &.ativo {
         span {
           margin-left: 0;
-          margin-top: -10px;
+          margin-top: -15px;
           font-size: 11px;
           color: #aaa;
           transition: 0.2s ease-out;

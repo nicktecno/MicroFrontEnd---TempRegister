@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import * as S from "./style";
+
+import React, { useState, useEffect } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -11,9 +14,6 @@ import notification from "../../services/notification";
 
 import Loading from "../../components/Loading";
 
-import * as S from "./style";
-import "bootstrap/dist/css/bootstrap.min.css";
-
 function TempRegister({
   mktName,
   api,
@@ -24,18 +24,17 @@ function TempRegister({
   validaLogin,
   googleApiKey,
 }) {
-  const formEl = useRef();
   const history = useRouter();
 
-  const [validated, setValidated] = useState(false);
   const [nome, setNome] = useState("");
   const [sobrenome, setSobrenome] = useState("");
+  const [birth, setBirth] = useState("");
   const [cpf, setCpf] = useState("");
   const [ie, setIe] = useState("");
-  const [telefone, setTelefone] = useState("");
+  const [telefone, setTelefone] = useState(undefined);
   const [mask, setMask] = useState("");
   const [cep, setCEP] = useState(localizacao.zipcode);
-  const [rua, setRua] = useState(localizacao.address);
+  const [rua, setRua] = useState(localizacao.street);
   const [numero, setNumero] = useState("");
   const [complemento, setComplemento] = useState("");
   const [cidade, setCidade] = useState(localizacao.city);
@@ -43,6 +42,7 @@ function TempRegister({
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmasenha, setConfirmaSenha] = useState("");
+  const [error, setError] = useState(false);
   const [show1, setShow1] = useState("password");
   const [show2, setShow2] = useState("password");
   const [loading, setLoading] = useState(false);
@@ -90,6 +90,7 @@ function TempRegister({
       localStorage.setItem(`${mktName}_userId`, response.id);
       localStorage.setItem(`${mktName}_username`, response.name);
     } catch (err) {
+      setLoading(false);
       console.error(err);
     } finally {
     }
@@ -119,50 +120,16 @@ function TempRegister({
       }
     } catch (err) {
       console.error(err);
+      setLoading(false);
     } finally {
     }
   }
 
-  async function handleCadastro(e) {
+  async function handleCadastro() {
     setLoading(true);
-    e.preventDefault();
     setSubmit(true);
-    // eslint-disable-next-line no-unused-vars
-    const form = formEl.current;
 
-    getEmailValid(email);
-
-    if (senha.trim() && confirmasenha.trim()) {
-      if (senha !== confirmasenha) {
-        notification("A senha e confirmação não estão iguais.", "error");
-        setLoading(false);
-        return false;
-      }
-    } else {
-      notification("Por favor preencha as senhas.", "error");
-      setLoading(false);
-      return false;
-    }
-
-    if (
-      nome === "" ||
-      sobrenome === "" ||
-      cpf === "" ||
-      telefone === "" ||
-      cep === "" ||
-      rua === "" ||
-      numero === "" ||
-      cidade === "" ||
-      estado === "" ||
-      email === "" ||
-      senha === "" ||
-      confirmasenha === "" ||
-      aceito2 === false
-    ) {
-      notification("Verifique se todos os campos estão preenchidos", "error");
-      setLoading(false);
-      return false;
-    }
+    const birthEdited = birth.split("/");
 
     const dataCadastro = {
       first_name: nome,
@@ -170,57 +137,53 @@ function TempRegister({
       email: email,
       vat_number: cpf.replace("-", "").split(".").join("").replace("/", ""),
       ie_number: ie,
+      date_of_birth: `${birthEdited[2]}-${birthEdited[1]}-${birthEdited[0]}`,
       password: senha,
       password_confirmation: confirmasenha,
       anonymous: false,
       phone:
-        "+55" +
-        telefone
-          .replace("(", "")
-          .replace(")", "")
-          .replace("-", "")
-          .replace(" ", ""),
+        telefone !== undefined
+          ? "+55" +
+            telefone
+              .replace("(", "")
+              .replace(")", "")
+              .replace("-", "")
+              .replace(" ", "")
+          : undefined,
     };
 
-    if (aceito2) {
-      try {
-        const { data: response } = await api.post(
-          "/customer/register",
-          dataCadastro
-        );
-
-        localStorage.removeItem(`${mktName}_username`);
-
-        if (response.message === "Sua conta foi criada com sucesso") {
-          //loginUser();
-          // notification("Cadastro realizado com sucesso", "success");
-
-          handleLogin();
-          setLoading(false);
-        } else {
-          notification(
-            response.message
-              .replace("first name", "nome")
-              .replace("last name", "sobrenome"),
-            "error"
+    if (aceito1 && aceito2) {
+      await api
+        .post("/customer/register", dataCadastro)
+        .then(function (response) {
+          localStorage.removeItem(
+            `${process.env.NEXT_PUBLIC_REACT_APP_NAME}_username`
           );
+
+          if (
+            response !== undefined &&
+            response.data.message === "Sua conta foi criada com sucesso"
+          ) {
+            const WishListProduct =
+              JSON.parse(sessionStorage.getItem("productInfo")) || false;
+            if (!WishListProduct) {
+              notification("Cadastro realizado com sucesso", "success");
+            }
+
+            handleLogin();
+          }
+        })
+        .catch(function (error) {
+          setError(error.response.data.errors);
           setLoading(false);
-        }
-      } catch (err) {
-        notification("Erro ao realizar cadastro", "error");
-        setLoading(false);
-        console.error(err);
-      } finally {
-      }
+        });
     } else {
-      setLoading(false);
       notification(
         "Para prosseguir, aceite os termos de uso e nossa política de privacidade.",
         "error"
       );
+      setLoading(false);
     }
-
-    setValidated(true);
   }
   async function getPlacesCreate() {
     setLoading(true);
@@ -393,6 +356,7 @@ function TempRegister({
         )
       );
     } catch (err) {
+      setLoading(false);
       console.error(err);
     } finally {
       sessionStorage.removeItem("cart");
@@ -405,8 +369,6 @@ function TempRegister({
       const response = await api.post("/customer/checkout/cart/add", item);
 
       if (response.data.message === "Products added to cart successfully.") {
-        // notification("Produto adicionado no carrinho", "success");
-        //  history.push("/carrinho");
       }
     } catch {}
   }
@@ -439,9 +401,9 @@ function TempRegister({
           : localizacao.postalcode
         : localizacao.zipcode
     );
-    // setRua(localizacao.address);
+
     setCidade(localizacao.city);
-    setRua(localizacao.address);
+    setRua(localizacao.street);
     setEstado(localizacao.state);
     setBairro(localizacao.neighborhood);
   }, [localizacao]);
@@ -589,49 +551,85 @@ function TempRegister({
                 <Container>
                   <Row>
                     <Col>
-                      <form
-                        noValidate
-                        validated={validated.toString()}
-                        ref={formEl}
-                      >
+                      <form>
                         <Row className="rowPack">
                           <Col>
                             <label
                               className={nome && "ativo"}
                               style={{
                                 border:
-                                  submit &&
-                                  nome.length === 0 &&
-                                  "2px solid #ce171f",
+                                  submit && nome.length === 0
+                                    ? "2px solid #ce171f"
+                                    : error !== false &&
+                                      error !== undefined &&
+                                      error.first_name !== undefined &&
+                                      "2px solid #ce171f",
                               }}
                             >
                               <span>Nome</span>
                               <input
                                 type="text"
                                 value={nome}
-                                onChange={(e) => setNome(e.target.value)}
+                                onChange={(e) => {
+                                  setNome(e.target.value);
+                                  if (
+                                    error !== false &&
+                                    error !== undefined &&
+                                    error.first_name !== undefined
+                                  ) {
+                                    setError((current) => {
+                                      const { first_name, ...rest } = current;
+
+                                      return rest;
+                                    });
+                                  }
+                                }}
                                 required
                               />
                             </label>
+                            <S.ErrorMessage>
+                              {error !== false &&
+                                error !== undefined &&
+                                error.first_name !== undefined &&
+                                error.first_name[0]}
+                            </S.ErrorMessage>
                           </Col>
                           <Col>
                             <label
                               className={sobrenome && "ativo"}
                               style={{
                                 border:
-                                  submit &&
-                                  sobrenome.length === 0 &&
-                                  "2px solid #ce171f",
+                                  submit && sobrenome.length === 0
+                                    ? "2px solid #ce171f"
+                                    : error !== false &&
+                                      error !== undefined &&
+                                      error.last_name !== undefined &&
+                                      "2px solid #ce171f",
                               }}
                             >
                               <span>Sobrenome</span>
                               <input
                                 type="text"
                                 value={sobrenome}
-                                onChange={(e) => setSobrenome(e.target.value)}
+                                onChange={(e) => {
+                                  setSobrenome(e.target.value);
+                                  if (error.last_name !== undefined) {
+                                    setError((current) => {
+                                      const { last_name, ...rest } = current;
+
+                                      return rest;
+                                    });
+                                  }
+                                }}
                                 required
                               />
                             </label>
+                            <S.ErrorMessage>
+                              {error !== false &&
+                                error !== undefined &&
+                                error.last_name !== undefined &&
+                                error.last_name[0]}
+                            </S.ErrorMessage>
                           </Col>
                         </Row>
 
@@ -639,13 +637,17 @@ function TempRegister({
                           className={cpf && "ativo"}
                           style={{
                             border:
-                              submit && cpf.length === 0 && "2px solid #ce171f",
+                              submit && cpf.length === 0
+                                ? "2px solid #ce171f"
+                                : error !== false &&
+                                  error !== undefined &&
+                                  error.vat_number !== undefined &&
+                                  "2px solid #ce171f",
                           }}
                         >
                           <span>CPF/CNPJ</span>
                           <InputMask
                             mask={mask}
-                            placeholder="Digite seu CPF/CNPJ (Apenas Números)"
                             alwaysShowMask
                             type="text"
                             value={cpf}
@@ -696,40 +698,121 @@ function TempRegister({
                                 if (targetEdited.length > 11) {
                                   setActiveIE(true);
                                 }
+                                if (
+                                  error !== false &&
+                                  error !== undefined &&
+                                  error.vat_number !== undefined
+                                ) {
+                                  setError((current) => {
+                                    const { vat_number, ...rest } = current;
+
+                                    return rest;
+                                  });
+                                }
+                                if (
+                                  error !== false &&
+                                  error !== undefined &&
+                                  error.vat_number !== undefined
+                                ) {
+                                  if (
+                                    error !== false &&
+                                    error !== undefined &&
+                                    error.vat_number !== undefined
+                                  ) {
+                                    setError((current) => {
+                                      const { vat_number, ...rest } = current;
+
+                                      return rest;
+                                    });
+                                  }
+                                }
                               }
                             }}
                           />
                         </label>
+                        <S.ErrorMessage>
+                          {error !== false &&
+                            error !== undefined &&
+                            error.vat_number !== undefined &&
+                            error.vat_number[0]}
+                        </S.ErrorMessage>
                         {activeIE === true ? (
-                          <label className={ie && "ativo"}>
-                            <span>Sua inscrição estadual</span>
+                          <>
+                            <label className={ie && "ativo"}>
+                              <span>Sua inscrição estadual</span>
 
-                            <InputMask
-                              id="ie"
-                              onKeyPress={(event) => {
-                                if (!/[0-9]/.test(event.key)) {
-                                  event.preventDefault();
-                                }
-                              }}
-                              step="1"
-                              className="selectCategory"
-                              placeholder="Digite sua Incrição Estadual (Apenas Números)"
-                              value={ie}
-                              onChange={(e) => {
-                                setIe(e.target.value);
-                              }}
-                            />
-                          </label>
+                              <InputMask
+                                id="ie"
+                                onKeyPress={(event) => {
+                                  if (!/[0-9]/.test(event.key)) {
+                                    event.preventDefault();
+                                  }
+                                }}
+                                step="1"
+                                className="selectCategory"
+                                placeholder="Digite sua Incrição Estadual (Apenas Números)"
+                                value={ie}
+                                onChange={(e) => {
+                                  setIe(e.target.value);
+                                }}
+                              />
+                            </label>
+                            <S.ErrorMessage />
+                          </>
                         ) : (
                           ""
                         )}
                         <label
+                          className={birth && "ativo"}
+                          style={{
+                            border:
+                              submit && birth.length === 0
+                                ? "2px solid #ce171f"
+                                : error !== false &&
+                                  error !== undefined &&
+                                  error.date_of_birth !== undefined &&
+                                  "2px solid #ce171f",
+                          }}
+                        >
+                          <span>Data de nascimento</span>
+                          <InputMask
+                            mask="99/99/9999"
+                            type="text"
+                            value={birth}
+                            onChange={(e) => {
+                              setBirth(e.target.value);
+                              if (
+                                error !== false &&
+                                error !== undefined &&
+                                error.date_of_birth !== undefined
+                              ) {
+                                setError((current) => {
+                                  const { date_of_birth, ...rest } = current;
+
+                                  return rest;
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+                        <S.ErrorMessage>
+                          {error !== false &&
+                            error !== undefined &&
+                            error.date_of_birth !== undefined &&
+                            error.date_of_birth[0]}
+                        </S.ErrorMessage>
+                        <label
                           className={telefone && "ativo"}
                           style={{
                             border:
-                              submit &&
-                              telefone.length === 0 &&
-                              "2px solid #ce171f",
+                              submit && telefone !== undefined
+                                ? telefone.length === 0
+                                  ? "2px solid #ce171f"
+                                  : error !== false &&
+                                    error !== undefined &&
+                                    error.phone !== undefined &&
+                                    "2px solid #ce171f"
+                                : "2px solid #ce171f",
                           }}
                         >
                           <span>Telefone</span>
@@ -737,9 +820,28 @@ function TempRegister({
                             mask="(99) 99999-9999"
                             type="text"
                             value={telefone}
-                            onChange={(e) => setTelefone(e.target.value)}
+                            onChange={(e) => {
+                              if (
+                                error !== false &&
+                                error !== undefined &&
+                                error.phone !== undefined
+                              ) {
+                                setError((current) => {
+                                  const { phone, ...rest } = current;
+
+                                  return rest;
+                                });
+                              }
+                              setTelefone(e.target.value);
+                            }}
                           />
                         </label>
+                        <S.ErrorMessage>
+                          {error !== false &&
+                            error !== undefined &&
+                            error.phone !== undefined &&
+                            error.phone[0]}
+                        </S.ErrorMessage>
 
                         <label
                           className={cep && "ativo"}
@@ -760,12 +862,15 @@ function TempRegister({
                             )}
                           />
                         </label>
+                        <S.ErrorMessage />
 
                         <label
                           className={rua && "ativo"}
                           style={{
                             border:
-                              submit && rua.length === 0 && "2px solid #ce171f",
+                              submit && rua !== undefined
+                                ? rua?.length === 0 && "2px solid #ce171f"
+                                : "2px solid #ce171f",
                           }}
                         >
                           <span>Rua</span>
@@ -776,6 +881,7 @@ function TempRegister({
                             required
                           />
                         </label>
+                        <S.ErrorMessage />
 
                         <Row className="rowPack">
                           <Col xs={6} className="colPack">
@@ -796,6 +902,7 @@ function TempRegister({
                                 required
                               />
                             </label>
+                            <S.ErrorMessage />
                           </Col>
                           <Col xs={6} className="colPack">
                             <label className={complemento && "ativo"}>
@@ -806,6 +913,7 @@ function TempRegister({
                                 onChange={(e) => setComplemento(e.target.value)}
                               />
                             </label>
+                            <S.ErrorMessage />
                           </Col>
                           <Col xs={6} md={4} className="colPack">
                             <label
@@ -825,6 +933,7 @@ function TempRegister({
                                 required
                               />
                             </label>
+                            <S.ErrorMessage />
                           </Col>
                           <Col xs={6} md={4} className="colPack">
                             <label
@@ -844,6 +953,7 @@ function TempRegister({
                                 required
                               />
                             </label>
+                            <S.ErrorMessage />
                           </Col>
                           <Col xs={6} md={4} className="colPack">
                             <label
@@ -863,6 +973,7 @@ function TempRegister({
                                 required
                               />
                             </label>
+                            <S.ErrorMessage />
                           </Col>
                         </Row>
                         <label
@@ -870,18 +981,43 @@ function TempRegister({
                           style={{
                             border:
                               submit &&
-                              email.length === 0 &&
-                              "2px solid #ce171f",
+                              email !== undefined &&
+                              email.length === 0
+                                ? "2px solid #ce171f"
+                                : error !== false &&
+                                  error !== undefined &&
+                                  error.email !== undefined &&
+                                  "2px solid #ce171f",
                           }}
                         >
                           <span>E-mail</span>
                           <input
                             type="text"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onBlur={() => getEmailValid(email)}
+                            onChange={(e) => {
+                              if (
+                                error !== false &&
+                                error !== undefined &&
+                                error.email !== undefined
+                              ) {
+                                setError((current) => {
+                                  const { email, ...rest } = current;
+
+                                  return rest;
+                                });
+                              }
+                              setEmail(e.target.value);
+                            }}
                             required
                           />
                         </label>
+                        <S.ErrorMessage>
+                          {error !== false &&
+                            error !== undefined &&
+                            error.email !== undefined &&
+                            error.email[0]}
+                        </S.ErrorMessage>
                         <Row className="rowPack">
                           <Col xs={6} className="colPack">
                             <label
@@ -889,8 +1025,13 @@ function TempRegister({
                               style={{
                                 border:
                                   submit &&
-                                  senha.length === 0 &&
-                                  "2px solid #ce171f",
+                                  senha !== undefined &&
+                                  senha.length === 0
+                                    ? "2px solid #ce171f"
+                                    : error !== false &&
+                                      error !== undefined &&
+                                      error.password !== undefined &&
+                                      "2px solid #ce171f",
                               }}
                             >
                               <span>Senha</span>
@@ -912,10 +1053,29 @@ function TempRegister({
                               <input
                                 type={show1}
                                 value={senha}
-                                onChange={(e) => setSenha(e.target.value)}
+                                onChange={(e) => {
+                                  if (
+                                    error !== false &&
+                                    error !== undefined &&
+                                    error.password !== undefined
+                                  ) {
+                                    setError((current) => {
+                                      const { password, ...rest } = current;
+
+                                      return rest;
+                                    });
+                                  }
+                                  setSenha(e.target.value);
+                                }}
                                 required
                               />
                             </label>
+                            <S.ErrorMessage>
+                              {error !== false &&
+                                error !== undefined &&
+                                error.password !== undefined &&
+                                error.password[0]}
+                            </S.ErrorMessage>
                           </Col>
                           <Col xs={6} className="colPack">
                             <label
@@ -923,8 +1083,13 @@ function TempRegister({
                               style={{
                                 border:
                                   submit &&
-                                  confirmasenha.length === 0 &&
-                                  "2px solid #ce171f",
+                                  confirmasenha !== undefined &&
+                                  confirmasenha.length === 0
+                                    ? "2px solid #ce171f"
+                                    : error !== false &&
+                                      error !== undefined &&
+                                      error.password !== undefined &&
+                                      "2px solid #ce171f",
                               }}
                             >
                               <span>Confirmação de senha</span>
@@ -947,12 +1112,29 @@ function TempRegister({
                               <input
                                 type={show2}
                                 value={confirmasenha}
-                                onChange={(e) =>
-                                  setConfirmaSenha(e.target.value)
-                                }
+                                onChange={(e) => {
+                                  if (
+                                    error !== false &&
+                                    error !== undefined &&
+                                    error.password !== undefined
+                                  ) {
+                                    setError((current) => {
+                                      const { password, ...rest } = current;
+
+                                      return rest;
+                                    });
+                                  }
+                                  setConfirmaSenha(e.target.value);
+                                }}
                                 required
                               />
                             </label>
+                            <S.ErrorMessage>
+                              {error !== false &&
+                                error !== undefined &&
+                                error.password !== undefined &&
+                                error.password[0]}
+                            </S.ErrorMessage>
                           </Col>
                         </Row>
 
@@ -971,7 +1153,7 @@ function TempRegister({
                                 className="check-termos"
                                 type="checkbox"
                                 checked={aceito1}
-                                onClick={() =>
+                                onChange={() =>
                                   setAceito1(aceito1 ? false : true)
                                 }
                               />
@@ -995,7 +1177,7 @@ function TempRegister({
                                 className="check-termos"
                                 type="checkbox"
                                 checked={aceito2}
-                                onClick={() =>
+                                onChange={() =>
                                   setAceito2(aceito2 ? false : true)
                                 }
                               />
@@ -1023,6 +1205,7 @@ function TempRegister({
                       </Link>
                       {nome !== "" &&
                       sobrenome !== "" &&
+                      birth !== "" &&
                       cpf !== "" &&
                       telefone !== "" &&
                       cep !== "" &&
