@@ -857,7 +857,6 @@ function TempRegister({
                                 : submit && "2px solid #ce171f",
                           }}
                         >
-                          {console.log(cep)}
                           <span>CEP</span>
                           <InputMask
                             type="text"
