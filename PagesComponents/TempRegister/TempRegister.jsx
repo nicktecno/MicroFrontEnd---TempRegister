@@ -33,7 +33,7 @@ function TempRegister({
   const [ie, setIe] = useState("");
   const [telefone, setTelefone] = useState(undefined);
   const [mask, setMask] = useState("");
-  const [cep, setCEP] = useState(localizacao.zipcode);
+  const [cep, setCEP] = useState(localizacao.postalcode);
   const [rua, setRua] = useState(localizacao.street);
   const [numero, setNumero] = useState("");
   const [complemento, setComplemento] = useState("");
@@ -805,17 +805,18 @@ function TempRegister({
                           className={telefone && "ativo"}
                           style={{
                             border:
-                              submit && telefone !== undefined
-                                ? telefone.length === 0
+                              telefone !== undefined
+                                ? submit && telefone.length === 0
                                   ? "2px solid #ce171f"
                                   : error !== false &&
                                     error !== undefined &&
                                     error.phone !== undefined &&
                                     "2px solid #ce171f"
-                                : "2px solid #ce171f",
+                                : submit && "2px solid #ce171f",
                           }}
                         >
                           <span>Telefone</span>
+
                           <InputMask
                             mask="(99) 99999-9999"
                             type="text"
@@ -847,16 +848,22 @@ function TempRegister({
                           className={cep && "ativo"}
                           style={{
                             border:
-                              submit && cep.length === 0 && "2px solid #ce171f",
+                              cep !== undefined
+                                ? cep !== null && submit
+                                  ? "2px solid #ce171f"
+                                  : submit &&
+                                    cep.length === 0 &&
+                                    "2px solid #ce171f"
+                                : submit && "2px solid #ce171f",
                           }}
                         >
+                          {console.log(cep)}
                           <span>CEP</span>
                           <InputMask
                             type="text"
                             mask="99999-999"
                             value={cep}
                             onBlur={getCep}
-                            // eslint-disable-next-line no-sequences
                             onChange={(e) => (
                               setCEP(e.target.value), handleCep
                             )}
@@ -868,9 +875,11 @@ function TempRegister({
                           className={rua && "ativo"}
                           style={{
                             border:
-                              submit && rua !== undefined
-                                ? rua?.length === 0 && "2px solid #ce171f"
-                                : "2px solid #ce171f",
+                              rua !== undefined
+                                ? submit &&
+                                  rua?.length === 0 &&
+                                  "2px solid #ce171f"
+                                : submit && "2px solid #ce171f",
                           }}
                         >
                           <span>Rua</span>
